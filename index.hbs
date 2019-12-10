@@ -1,9 +1,29 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta charset="UTF-8">
-  <title>{{htmlWebpackPlugin.options.title}}</title>
+    <meta charset="UTF-8">
+    <title>{{htmlWebpackPlugin.options.title}}</title>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=e4007b2d-0930-49a2-ac1e-a9ccee8f9fca&lang=ru_RU"
+        type="text/javascript"></script>
 </head>
+
 <body>
+    <div id="map"></div>
+    <div id="feedback" class="feedback">
+        <div id="feedback__head" class="feedback__head">
+            <div class="symbol symbol__marker"></div>
+            <span id="address" class="feedback__address"></span>
+            <div class="symbol symbol__times"></div>
+        </div>
+        <div id="content" class="feedback__content"><span id="feedback__list">Отзывов пока нет...</span></div>
+        <div class="feedback__label">ВАШ ОТЗЫВ</div>
+        <div class="feedback__input"><input required placeholder="Ваше имя" type="text" id="username"></div>
+        <div class="feedback__input"><input required placeholder="Укажите место" type="text" id="place"></div>
+        <div class="feedback__input"><textarea rows="4" placeholder="Поделитесь впечатлениями" id="feedback__content"
+                required></textarea></div>
+        <button id="saveBtn">Добавить</button>
+    </div>
 </body>
+
 </html>

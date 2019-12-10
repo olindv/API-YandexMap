@@ -1,0 +1,29 @@
+body,
+html {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.symbol__times:before {
+    content: 'X';
+}
+
+.symbol__marker:before {
+    content: 'X';
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+.feedback {
+    font-size: 12px;
+    position: absolute;
+    height: 450px;
+    width: 300px;
+    background-color: #fff;
+    border-radius: 5px;
+    display: none;
+}
