@@ -28,6 +28,8 @@ function initMap() {
 
     // Задаем положение окошка с отзывом относительно клика по карте
     let showForm = position => {
+        myMap.balloon.close();
+
         let x = position[0];
         let y = position[1];
 
@@ -44,7 +46,7 @@ function initMap() {
             y = 0;
         }
 
-        feedback.style.display = 'block';
+        feedback.style.display = 'flex';
         feedback.style.left = x + 'px';
         feedback.style.top = y + 'px';
 
@@ -55,6 +57,7 @@ function initMap() {
     let closeForm = () => {
         feedback.style.display = 'none';
         clearForm();
+        clearList();
     };
 
     // Очищаем инпуты
@@ -64,12 +67,20 @@ function initMap() {
         feedbackContent.value = '';
     };
 
+    let clearList = () => {
+        let contentLength = content.children.length;
+        for (let i = contentLength; i > 1; i--) {
+            if (content.tagName !== 'SPAN')
+                content.removeChild(content.lastChild);
+        }
+        userreview.style.display = 'block'; // условие не работает, надо разобраться
+    };
+
     //Показываем форму при клике, а также выводим точный адрес точки клика по карте
     myMap.events.add('click', e => {
         let coords = e.get('coords');
         let position = e.get('position');
         console.log(e);
-
         console.log(ymaps);
         ymaps
             .geocode(coords)
@@ -81,6 +92,7 @@ function initMap() {
                 address.textContent = currentFeedback.address;
                 showForm(position);
             })
+            .then(() => clearList())
             .catch(() => console.log('Видимо что-то случилось'));
     });
 
@@ -123,30 +135,51 @@ function initMap() {
             return;
         }
 
-        currentFeedback.username = nameValue;
-        currentFeedback.place = placeValue;
-        currentFeedback.text = feedbackValue;
+        generateFeedback(nameValue, placeValue, feedbackValue);
+    };
+
+    let generateFeedback = (name, place, feedback) => {
+        currentFeedback.username = name;
+        currentFeedback.place = place;
+        currentFeedback.text = feedback;
         currentFeedback.date = new Date().toLocaleString();
         feedbacks.push(Object.assign({}, currentFeedback));
         userreview.style.display = 'none';
-        content.innerHTML += feedbackTemlpate({ feedback: currentFeedback });
         clearForm();
-
-        let header = `${placeValue} ${currentFeedback.address}`;
+        content.innerHTML += feedbackTemlpate({ feedback: currentFeedback });
+        let header = `${place} ${currentFeedback.address}`;
         let placemark = new ymaps.Placemark( // Создаем метку, а также указываем props (задаем значения и свойства балуну)
             currentFeedback.coords,
             {
                 balloonContentHeader: header,
-                balloonContentBody: feedbackValue,
+                balloonContentBody: feedback,
                 balloonContentFooter: currentFeedback.date,
-                hintContent: `${nameValue} ${placeValue}`
+                hintContent: `${name} ${place}`
             },
             {
-                preset: 'islands#darkGreenIcon'
+                preset: 'islands#darkGreenIcon',
+                openBalloonOnClick: false,
+                hideIconOnBalloonOpen: false
             }
         );
-
         clusterer.add(placemark); // Добавляем метку в кластер
+
+        placemark.events.add('click', e => {
+            let position = e.get('position');
+            let target = e.get('target');
+            currentFeedback = {};
+            let len = feedbacks.length;
+            console.log(address.textContent);
+            console.log(feedbacks);
+            for (let i = 0; i < len; i++) {
+                if (feedbacks[i].address == address.textContent) {
+                    console.log(feedbacks[i].address);
+                }
+            }
+            if (content.children.length > 1) {
+                showForm(position);
+            }
+        });
     };
 
     saveBtn.addEventListener('click', saveFeedback);
