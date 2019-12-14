@@ -100,3 +100,25 @@ textarea {
 .date {
     color: grey;
 }
+.ballon__header {
+    margin: 5px 0;
+}
+
+.ballon__wrap {
+    height: 125px;
+    display: flex;
+    flex-direction: column;
+}
+
+.ballon__footer {
+    display: flex;
+    align-items: flex-end;
+    align-self: flex-end;
+    flex-grow: 1;
+}
+
+.ballon__feedback {
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
+}
