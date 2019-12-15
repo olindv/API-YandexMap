@@ -5,17 +5,22 @@ ymaps.ready(initMap);
 
 let myMap,
     currentFeedback = {},
-    feedbacks = [],
+    storage = localStorage,
+    feedbacks = JSON.parse(storage.marks || '[]'),
     zelenograd = [55.98, 37.19];
 
 // Инициализируем карту
 function initMap() {
-    myMap = new ymaps.Map('map', {
-        center: zelenograd,
-        zoom: 14,
-        behaviors: ['drag'],
-        controls: ['zoomControl']
-    });
+    myMap = new ymaps.Map(
+        'map',
+        {
+            center: zelenograd,
+            zoom: 14,
+            behaviors: ['drag'],
+            controls: ['zoomControl']
+        },
+        { yandexMapDisablePoiInteractivity: true }
+    );
 
     const feedback = document.getElementById('feedback');
     const feedbackContent = document.getElementById('feedback__content');
@@ -44,11 +49,11 @@ function initMap() {
     // Очищаем список отзывов
     const clearList = () => {
         let contentLength = content.children.length;
+
         for (let i = contentLength; i > 1; i--) {
             if (content.tagName !== 'SPAN')
                 content.removeChild(content.lastChild);
         }
-        userreview.style.display = 'block'; // условие не работает, надо разобраться
     };
 
     // Задаем положение окошка с отзывом относительно клика по карте
@@ -59,16 +64,14 @@ function initMap() {
         let y = position[1];
         let { clientHeight, clientWidth } = document.documentElement;
         let { offsetHeight, offsetWidth } = feedback;
-        if (x + offsetWidth > clientWidth) {
-            x = clientWidth - offsetWidth;
-        }
-        if (x < 0) {
-            x = 0;
-        }
+
         if (y + offsetHeight > clientHeight) {
             y = clientHeight - offsetHeight;
-        }
-        if (y < 0) {
+        } else if (x + offsetWidth > clientWidth) {
+            x = clientWidth - offsetWidth;
+        } else if (x < 0) {
+            x = 0;
+        } else if (y < 0) {
             y = 0;
         }
 
@@ -139,7 +142,6 @@ function initMap() {
         if (!nameValue || !placeValue || !feedbackValue) {
             return;
         }
-
         generateFeedback(nameValue, placeValue, feedbackValue);
     };
 
@@ -168,6 +170,7 @@ function initMap() {
             }
         );
 
+        storage.marks = JSON.stringify(feedbacks);
         clusterer.add(placemark); // Добавляем метку в кластер
 
         //Кликаем на метку и раскрываем форму с отзывом
@@ -183,6 +186,7 @@ function initMap() {
     const showFeedbacks = (addressValue, position) => {
         let contentLength = content.children.length;
         let feedbacksLength = feedbacks.length;
+
         currentFeedback = {};
 
         clearForm();
@@ -210,9 +214,56 @@ function initMap() {
         if (target.className != 'ballon__feedback') {
             return;
         }
+
         const x = e.clientX;
         const y = e.clientY;
 
         showFeedbacks(target.textContent, [x, y]);
     });
+
+    // Отрисовываем метки при перезагрузке страницы
+    const drawPlacemark = () => {
+        if (feedbacks !== '[]') {
+            userreview.style.display = 'none';
+
+            for (let i = 0; i < feedbacks.length; i++) {
+                const item = feedbacks[i];
+
+                let placemark = new ymaps.Placemark( // Создаем метку, а также указываем props (задаем значения и свойства балуну)
+                    item.coords,
+                    {
+                        balloonContentHeader: item.place,
+                        balloonContentBody: item.text,
+                        balloonContentFeedback: item.address,
+                        balloonContentFooter: item.date
+                    },
+                    {
+                        preset: 'islands#darkGreenIcon',
+                        openBalloonOnClick: false,
+                        hideIconOnBalloonOpen: false
+                    }
+                );
+
+                clusterer.add(placemark);
+
+                placemark.events.add('click', e => {
+                    let position = e.get('position');
+
+                    address.textContent = item.address;
+                    showFeedbacks(address.textContent, position);
+                });
+            }
+
+            map.addEventListener('click', e => {
+                let target = e.target;
+
+                if (target.className != 'ballon__feedback') {
+                    return;
+                }
+
+                address.textContent = target.textContent;
+            });
+        }
+    };
+    drawPlacemark();
 }
