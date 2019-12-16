@@ -1,4 +1,4 @@
-## LoftSchool example project
+## Работа с Yandex API (maps)
 
 ### Доступные команды
 
