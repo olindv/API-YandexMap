@@ -1,3 +1,5 @@
+//Работа с Yandex API map
+
 import feedbackTemlpate from './template/feedback.hbs';
 require('./styles/main.css');
 
